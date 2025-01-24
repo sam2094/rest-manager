@@ -4,6 +4,7 @@
     {
         public Guid Id { get; set; } 
         public int Size { get; set; }
+        public DateTime ArrivalTime { get; set; }
 
         public override bool Equals(object obj)
         {

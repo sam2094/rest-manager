@@ -3,7 +3,6 @@ using Application.DTOs.Responses;
 using Application.Extension;
 using Application.Services;
 using Application.Services.Core;
-using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers.V1
