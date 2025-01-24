@@ -1,8 +1,10 @@
-﻿namespace Application.DTOs.Requests
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Application.DTOs.Requests
 {
     public class AddClientsRequest
     {
-        public int GroupId { get; set; }
+        [Range(1, 6, ErrorMessage = "Group size must be between 1 and 6")]
         public int GroupSize { get; set; }
     }
 }

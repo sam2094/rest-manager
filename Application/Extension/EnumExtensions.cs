@@ -1,20 +1,19 @@
 ﻿using System.ComponentModel;
-using System.Reflection;
 
 namespace Application.Extensions
 {
     public static class EnumExtensions
     {
-        public static string GetEnumDescription(this Enum value)
+        public static string GetEnumDescription(this Enum value, params object[] args)
         {
-            FieldInfo fi = value.GetType().GetField(value.ToString());
+            var field = value.GetType().GetField(value.ToString());
+            var attribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false)
+                                 .FirstOrDefault() as DescriptionAttribute;
 
-            if (fi.GetCustomAttributes(typeof(DescriptionAttribute), false) is DescriptionAttribute[] attributes && attributes.Any())
-            {
-                return attributes.First().Description;
-            }
+            if (attribute == null)
+                return value.ToString();
 
-            return value.ToString();
+            return string.Format(attribute.Description, args);
         }
     }
 }

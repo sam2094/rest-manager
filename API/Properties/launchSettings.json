@@ -7,7 +7,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "API(Dev)": {
+    "RestManager": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {

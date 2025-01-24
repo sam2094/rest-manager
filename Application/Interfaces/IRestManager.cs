@@ -4,7 +4,12 @@ namespace Application.Interfaces
 {
     public interface IRestManager
     {
-        bool TrySeatGroup(ClientsGroup group);
-        void FreeTable(int tableId);
+        Task OnArriveAsync(ClientsGroup group);
+        Task OnLeaveAsync(ClientsGroup group);
+        Task<Table> LookupAsync(ClientsGroup group);
+
+        // additional functionalities
+        Task<IEnumerable<Table>> GetAvailableTablesAsync();
+        Task<IEnumerable<Table>> GetOccupiedTablesAsync();
     }
 }

@@ -1,59 +1,58 @@
-﻿using Application.DTOs.Requests;
-using Application.Interfaces;
-using Application.Services.Core;
-using Domain.Enums;
+﻿using Application.Services.Core;
 using Domain.Models;
 using MediatR;
-using System.Net;
+using Application.Interfaces;
+using Domain.Enums;
+using Application.DTOs.Requests;
+using Application.Interfaces.Common;
 
 namespace Application.Services
 {
-    public class AddClientsService : BaseRequest<ApiResult<string>>
+    public class OnArriveService : BaseRequest<ApiResult<string>>
     {
-        public AddClientsRequest Model { get; set; }
+        public AddClientsRequest Request { get; set; }
 
-        public AddClientsService(AddClientsRequest model)
-        {
-            Model = model;
-        }
+        public OnArriveService(AddClientsRequest request) => Request = request;
 
-        public class AddClientsServiceHandler : IRequestHandler<AddClientsService, ApiResult<string>>
+        public class OnArriveServiceHandler : IRequestHandler<OnArriveService, ApiResult<string>>
         {
             private readonly IRestManager _restManager;
+            private readonly ILogger _logger;
 
-            public AddClientsServiceHandler(IRestManager restManager)
+            public OnArriveServiceHandler(IRestManager restManager, ILogger logger)
             {
                 _restManager = restManager;
+                _logger = logger;
             }
 
-            public async Task<ApiResult<string>> Handle(AddClientsService request, CancellationToken cancellationToken)
+            public async Task<ApiResult<string>> Handle(OnArriveService request, CancellationToken cancellationToken)
             {
-                if (request.Model.GroupSize <= 0)
+                try
                 {
+                    var group = new ClientsGroup
+                    {
+                        Id = Guid.NewGuid(),
+                        Size = request.Request.GroupSize
+                    };
+
+                    await _restManager.OnArriveAsync(group);
+
+                    await _logger.LogToConsoleAsync($"Group {group.Id} successfully arrived.");
+                    return ApiResult<string>.OK(group.Id.ToString());
+                }
+                catch (Exception ex)
+                {
+                    await _logger.LogToConsoleAsync($"Error processing group: {ex.Message}");
+
                     request.Error = new Error
                     {
-                        ErrorCode = CustomExceptionCodes.ValidationException,
-                        ErrorMessage = "Group size must be greater than zero.",
-                        HttpStatus = HttpStatusCode.BadRequest
+                        ErrorCode = CustomExceptionCodes.UnHandledException,
+                        ErrorMessage = ex.Message,
+                        HttpStatus = System.Net.HttpStatusCode.InternalServerError
                     };
 
                     return ApiResult<string>.ERROR(request.Error);
                 }
-
-                var group = new ClientsGroup
-                {
-                    Id = request.Model.GroupId,
-                    Size = request.Model.GroupSize
-                };
-
-                var success = _restManager.TrySeatGroup(group);
-
-                if (success)
-                {
-                    return ApiResult<string>.OK("Group successfully seated.");
-                }
-
-                return ApiResult<string>.OK("No available tables. Group added to waiting queue.");
             }
         }
     }
